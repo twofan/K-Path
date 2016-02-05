@@ -7,12 +7,19 @@
 var async = require('async');
 var readline = require('readline');
 var fs = require('fs');
-map = function(nodeFile, linkFile){
+var weighted = require('./weighted');
+
+graph = function(nodeFile, linkFile){
     this.nodeFile = nodeFile;
     this.linkFile = linkFile;
     this.readFiles = readFiles;
     this.nodes = null;
     this.links = null;
+    this.singleSourceDijkstra = function(source, target, pred){
+        console.log(source.toString()+" "+target.toString());
+        return weighted.singleSourceDijkstra(this, source, target, pred);
+    }
+    this.pathFromPred = pathFromPred;
 };
 
 function readFiles(callback){
@@ -81,5 +88,26 @@ function readLinkFile(linkFile, links, callback){
     })
 }
 
+function pathFromPred(source, target, pred){
+    var nodes = this.nodes;
+    var path = [];
+    var current = target;
 
-module.exports = map;
+    while (current != source){
+        var data = {
+            'id': current,
+            'loc': nodes[current]['loc']
+        }
+        path.unshift(data);
+        current = pred[current][0];
+    }
+    var data = {
+        'id': current,
+        'loc': nodes[current]['loc']
+    }
+    path.unshift(data);
+    return path;
+}
+
+
+module.exports = graph;
