@@ -41,7 +41,8 @@ function readNodeFile(nodeFile, nodes, callback){
     // read node file
     var count=0;
     const rl = readline.createInterface({
-        input: fs.createReadStream(nodeFile)
+        input: fs.createReadStream(nodeFile),
+        terminal: false
     });
 
     rl.on('line', function (line) {
@@ -65,7 +66,8 @@ function readLinkFile(linkFile, links, callback){
 
     var count=0;
     const rl = readline.createInterface({
-        input: fs.createReadStream(linkFile)
+        input: fs.createReadStream(linkFile),
+        terminal: false
     });
 
     rl.on('line', function (line) {

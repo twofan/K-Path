@@ -32,7 +32,7 @@ g.readFiles(function(){
         next();
     });
 
-    app.use('/', routes);
+    app.use('/api/', routes);
 
     // catch 404 and forward to error handler
     app.use(function(req, res, next) {

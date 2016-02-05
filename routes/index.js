@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/kpath', function(req, res, next) {
     var source = req.query['source'];
     var target = req.query['target'];
     var result = {};
