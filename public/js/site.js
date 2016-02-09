@@ -5,9 +5,9 @@ $( document ).ready(function(){
 
     var map = new GMaps({
         el: '#map',
-        zoom: 7,
-        lat: 36.8,
-        lng: -120.0
+        zoom: 11,
+        lat: 33.98,
+        lng: -118.1
     });
 
     $('#random-query').click(function(){
@@ -20,22 +20,22 @@ $( document ).ready(function(){
 });
 
 function getRandomQuery(count){
-    if (!count){
-        count=1890815;
-    }
-    var source = Math.floor(Math.random() * count) + 1;
-    var target = Math.floor(Math.random() * count) + 1;
-    return "/api/kpath?source="+source.toString()+"&target="+target.toString();
+
+    return "/api/kpath";
 }
 
 function displayResult(map, result){
     map.removePolylines();
     map.removeMarkers();
-    var shortestPath = result['shortestPath'];
-    drawPath(map, shortestPath);
+    var shortestPath = result['shortestPath']['path'];
+    var bdPath = result['bdPath']['path'];
+    drawPath(map, shortestPath, '#FF0000');
+    drawPath(map, bdPath, '#00FF00');
+    $('#min-length').html(result['shortestPath']['length']);
+    $('#alt-length').html(result['bdPath']['length']);
 }
 
-function drawPath(map, path){
+function drawPath(map, path, color){
     var firstItem = path[0];
     var lastItem = path[path.length-1];
     map.addMarker({
@@ -55,7 +55,7 @@ function drawPath(map, path){
     }
     map.drawPolyline({
         path: p,
-        strokeColor: '#131540',
+        strokeColor: color,
         strokeOpacity: 0.6,
         strokeWeight: 6
     });

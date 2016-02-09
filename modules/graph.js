@@ -8,16 +8,45 @@ var async = require('async');
 var readline = require('readline');
 var fs = require('fs');
 var weighted = require('./weighted');
-
 graph = function(nodeFile, linkFile){
     this.nodeFile = nodeFile;
     this.linkFile = linkFile;
     this.readFiles = readFiles;
     this.nodes = null;
     this.links = null;
+    this.nodesInRegion = null;
+    this.region = null;
     this.singleSourceDijkstra = function(source, target, pred){
         console.log(source.toString()+" "+target.toString());
         return weighted.singleSourceDijkstra(this, source, target, pred);
+    }
+    this.singleSourceDijkstraPath = function(source, target){
+        console.log("Getting Path from "+source.toString()+" to "+target.toString());
+        var pred = [];
+        var cost = weighted.singleSourceDijkstra(this, source, target, pred);
+        var path = weighted.pathFromPred(this, source, target, pred);
+        return path;
+    }
+    this.BD = function(source, target){
+        console.log("Computing K-path using BD");
+        return weighted.BD(this, source, target);
+    }
+    this.getRandomNode = function(){
+        return this.nodesInRegion[Math.floor(Math.random()*this.nodesInRegion.length)];
+    }
+    this.setRegion = function(region){
+        if (region==this.region){
+            return;
+        }
+        this.region = region;
+        this.nodesInRegion = [];
+        for (var k in this.nodes){
+            var loc = this.nodes[k]['loc'];
+
+            if (loc[0]>region[0][0] && loc[0]<region[0][1] && loc[1]>region[1][0] && loc[1]<region[1][1]){
+                this.nodesInRegion.push(k);
+            }
+        }
     }
     this.pathFromPred = pathFromPred;
 };
@@ -26,8 +55,8 @@ function readFiles(callback){
     const fs = require('fs');
     var nodeFile = this.nodeFile;
     var linkFile = this.linkFile;
-    var nodes = [];
-    var links = [];
+    var nodes = {};
+    var links = {};
     this.nodes = nodes;
     this.links = links;
     readNodeFile(nodeFile, nodes, function(){
@@ -80,7 +109,11 @@ function readLinkFile(linkFile, links, callback){
             if (!links[fromNode]){
                 links[fromNode] = {};
             }
+            if (!links[toNode]){
+                links[toNode] = {};
+            }
             links[fromNode][toNode] = weight;
+            links[toNode][fromNode] = weight;
         }
     });
 
@@ -110,6 +143,7 @@ function pathFromPred(source, target, pred){
     path.unshift(data);
     return path;
 }
+
 
 
 module.exports = graph;

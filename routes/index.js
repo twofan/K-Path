@@ -1,28 +1,28 @@
 var express = require('express');
 var router = express.Router();
+var LARegion = [[ -118599830,-118051235],[33805223, 34321512]]
 
 /* GET home page. */
 router.get('/kpath', function(req, res, next) {
     var source = req.query['source'];
     var target = req.query['target'];
     var result = {};
-    if (!source){
-        var err = new Error();
-        err.status = 400;
-        next(err);
-        return;
+    if (!source || !target){
+        req.g.setRegion(LARegion);
+        source = req.g.getRandomNode();
+        target = req.g.getRandomNode();
+        console.log("random select node "+source.toString()+" and "+target.toString());
     }
-    var pred=[];
-    var dist = req.g.singleSourceDijkstra(source, target, pred);
-    if (!dist[target]){
-        var err = new Error();
-        err.status = 401;
-        next(err);
-        return;
-    }
-    var path = req.g.pathFromPred(source, target, pred);
 
-    result['shortestPath'] = path;
+    //var path = req.g.singleSourceDijkstraPath(source, target);
+    //if (!path){
+    //    var err = new Error("");
+    //    err.status = 401;
+    //    next(err);
+    //    return;
+    //}
+    //result['shortestPath'] = path;
+    var result = req.g.BD(source, target);
     res.send(result);
 
 
