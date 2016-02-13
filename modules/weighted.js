@@ -61,44 +61,60 @@ algorithms.BD = function(g, source, target, cutoff){
     console.log("Generate sharing matrix done!");
     var nodes = g.nodes;
     var count=0;
-    var minLen = null;
-    var minNode = null;
 
-    for (var node in nodes){
-        if (path1[node]){
-            continue;
-        }
-        if (!dist[node] || !dist2[node]){
-            continue;
-        }
-        var sharing = checkViaPathSharing(g, source, target, node, matrix1, matrix2, dist[target], null);
-        if (sharing){
-            count += 1;
-            var len = dist[node]+dist2[node];
-            if (!minLen || len < minLen){
-                minLen = len;
-                minNode = node;
+    var sharings = [0.1,0.25,0.5];
+    var BDPaths = [];
+    for (var i=0; i<sharings.length; i++){
+        var sharing = sharings[i];
+        var minNode = null;
+        var minLen = null;
+        for (var node in nodes){
+            if (path1[node]){
+                continue;
+            }
+            if (!dist[node] || !dist2[node]){
+                continue;
+            }
+            if (checkViaPathSharing(g, source, target, node, matrix1, matrix2, dist[target], sharing)){
+                count += 1;
+                var len = dist[node]+dist2[node];
+                if (!minLen || len < minLen){
+                    minLen = len;
+                    minNode = node;
+                }
             }
         }
+        BDPaths.push(minNode)
     }
-    console.log(count.toString()+" nodes  passed sharing checking");
-    checkViaPathSharing(g, source, target, minNode, matrix1, matrix2, dist[target], null , 1);
+
+
+
+    console.log(BDPaths);
     var ret = {
         'shortestPath':{
             'path':path1,
             'length':dist[target]
         },
-        'bdPath':{
-            'path':pathFromViaNode(g, source, target, minNode, pred1, pred2),
-            'length':minLen
-        }
+        'BDPaths':[]
     };
+    for (var i=0; i<sharings.length; i++){
+        if (BDPaths[i]){
+            ret['BDPaths'].push({
+                'path':pathFromViaNode(g, source, target, BDPaths[i], pred1, pred2),
+                'length':dist[BDPaths[i]]+dist[BDPaths[i]]
+            });
+        }
+
+    }
+
     return ret;
 
 }
 
+
+
 function checkViaPathSharing(g, source, target, p, matrix1, matrix2, dist, partial, log){
-    if (!partial){ partial = 0.5 }
+    if (!partial){ partial = 0.3 }
     var sharing = (matrix1[p]+matrix2[p])/dist;
     if (log){
 

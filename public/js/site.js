@@ -25,14 +25,28 @@ function getRandomQuery(count){
 }
 
 function displayResult(map, result){
+    var colors = ['#0000FF','#FFFF00', '#00FFFF','#FF00FF'];
     map.removePolylines();
     map.removeMarkers();
     var shortestPath = result['shortestPath']['path'];
-    var bdPath = result['bdPath']['path'];
+    var BDPaths = result['BDPaths'];
+    for (var i=0; i<BDPaths.length; i++){
+        if (i==0 || BDPaths[i]['length']!=BDPaths[i-1]['length']){
+            drawPath(map, BDPaths[i]['path'], colors[i]);
+
+        }
+    }
     drawPath(map, shortestPath, '#FF0000');
-    drawPath(map, bdPath, '#00FF00');
     $('#min-length').html(result['shortestPath']['length']);
-    $('#alt-length').html(result['bdPath']['length']);
+    $('#alt-length').html("");
+    for (var i=0; i<BDPaths.length; i++) {
+        if (i==0 || BDPaths[i]['length']!=BDPaths[i-1]['length']){
+            $('#alt-length').append("<br />alt path "+(i+1).toString()+" length: "+BDPaths[i]['length']);
+
+        }
+
+    }
+
 }
 
 function drawPath(map, path, color){
@@ -56,7 +70,8 @@ function drawPath(map, path, color){
     map.drawPolyline({
         path: p,
         strokeColor: color,
-        strokeOpacity: 0.6,
-        strokeWeight: 6
+        strokeOpacity: 1,
+        strokeWeight: 5
+        
     });
 }
