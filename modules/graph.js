@@ -28,8 +28,10 @@ graph = function(nodeFile, linkFile){
         return path;
     }
     this.BD = function(source, target){
-        console.log("Computing K-path using BD");
         return weighted.BD(this, source, target);
+    }
+    this.plateau = function(source, target){
+        return weighted.plateau(this, source, target);
     }
     this.getRandomNode = function(){
         return this.nodesInRegion[Math.floor(Math.random()*this.nodesInRegion.length)];

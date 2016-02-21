@@ -10,8 +10,14 @@ $( document ).ready(function(){
         lng: -118.1
     });
 
-    $('#random-query').click(function(){
-        var query = getRandomQuery();
+    $('#random-query-bd').click(function(){
+        var query = getRandomQuery("bd");
+        $.get( query, function( data ) {
+            displayResult(map, data);
+        });
+    });
+    $('#random-query-plateau').click(function(){
+        var query = getRandomQuery("plateau");
         $.get( query, function( data ) {
             displayResult(map, data);
         });
@@ -19,9 +25,9 @@ $( document ).ready(function(){
 
 });
 
-function getRandomQuery(count){
+function getRandomQuery(algorithm){
 
-    return "/api/kpath";
+    return "/api/kpath/"+algorithm;
 }
 
 function displayResult(map, result){
@@ -29,23 +35,24 @@ function displayResult(map, result){
     map.removePolylines();
     map.removeMarkers();
     var shortestPath = result['shortestPath']['path'];
-    var BDPaths = result['BDPaths'];
-    for (var i=0; i<BDPaths.length; i++){
-        if (i==0 || BDPaths[i]['length']!=BDPaths[i-1]['length']){
-            drawPath(map, BDPaths[i]['path'], colors[i]);
+    var AltPaths = result['AltPaths'];
+    for (var i=0; i<AltPaths.length; i++){
+        if (i==0 || AltPaths[i]['length']!=AltPaths[i-1]['length']){
+            drawPath(map, AltPaths[i]['path'], colors[i]);
 
         }
     }
     drawPath(map, shortestPath, '#FF0000');
     $('#min-length').html(result['shortestPath']['length']);
     $('#alt-length').html("");
-    for (var i=0; i<BDPaths.length; i++) {
-        if (i==0 || BDPaths[i]['length']!=BDPaths[i-1]['length']){
-            $('#alt-length').append("<br />alt path "+(i+1).toString()+" length: "+BDPaths[i]['length']);
+    for (var i=0; i<AltPaths.length; i++) {
+        if (i==0 || AltPaths[i]['length']!=AltPaths[i-1]['length']){
+            $('#alt-length').append("<br />alt path "+(i+1).toString()+" length: "+AltPaths[i]['length']);
 
         }
 
     }
+    drawOverlapping(map, result['Overlapping'], '#000000');
 
 }
 
@@ -74,4 +81,19 @@ function drawPath(map, path, color){
         strokeWeight: 5
         
     });
+}
+
+function drawOverlapping(map, paths, color){
+    for (var i=0; i<paths.length; i++){
+        var path = paths[i];
+        var loc1 = [path[0]['loc'][1]/1000000.0,path[0]['loc'][0]/1000000.0];
+        var loc2 = [path[1]['loc'][1]/1000000.0,path[1]['loc'][0]/1000000.0];
+        map.drawPolyline({
+            path: [loc1, loc2],
+            strokeColor: color,
+            strokeOpacity: 1,
+            strokeWeight: 1
+
+        });
+    }
 }

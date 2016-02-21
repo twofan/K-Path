@@ -49,6 +49,7 @@ algorithms.singleSourceDijkstra = function(g, source, target, pred, cutoff){
 }
 
 algorithms.BD = function(g, source, target, cutoff){
+    console.log("Running DB Algorithm from source "+source.toString()+" to target "+target.toString());
     var pred1 = [];
     var pred2 = [];
     var dist = algorithms.singleSourceDijkstra(g, source, target, pred1, cutoff);
@@ -95,19 +96,79 @@ algorithms.BD = function(g, source, target, cutoff){
             'path':path1,
             'length':dist[target]
         },
-        'BDPaths':[]
+        'AltPaths':[]
     };
     for (var i=0; i<sharings.length; i++){
         if (BDPaths[i]){
-            ret['BDPaths'].push({
+            ret['AltPaths'].push({
                 'path':pathFromViaNode(g, source, target, BDPaths[i], pred1, pred2),
-                'length':dist[BDPaths[i]]+dist[BDPaths[i]]
+                'length':dist[BDPaths[i]]+dist2[BDPaths[i]]
             });
         }
 
     }
 
     return ret;
+
+}
+
+algorithms.plateau = function(g, source, target, cutoff){
+    console.log("Running Plateau Algorithm from source "+source.toString()+" to target "+target.toString());
+
+    var pred1 = {};
+    var pred2 = {};
+    var dist = algorithms.singleSourceDijkstra(g, source, target, pred1, cutoff);
+    var dist2 = algorithms.singleSourceDijkstra(g, target, source, pred2, cutoff);
+    console.log("Generate shortest path tree done!");
+    var dict = {};
+    var sharedLinkCount=0;
+    var allLinkCount=0;
+    for (var key in pred1) {
+        allLinkCount+=1;
+        var nodeID2 = pred1[key][0];
+        var nodeID1 = key;
+        if (pred2[nodeID1] && pred2[nodeID1][0] == nodeID2 || pred2[nodeID2] && pred2[nodeID2][0] == nodeID1) {
+            sharedLinkCount+=1;
+            if (!dict[nodeID1]){
+                dict[nodeID1] = [nodeID2];
+            }else{
+                dict[nodeID1].append(nodeID2);
+            }
+        }
+    }
+    console.log("all link count "+allLinkCount.toString());
+    console.log("shared link count "+sharedLinkCount.toString());
+    var shortestPath = pathFromPred(g, source, target, pred1);
+    var ret = {
+        'shortestPath':{
+            'path':shortestPath,
+            'length':dist[target]
+        },
+        'AltPaths':[],
+        'Overlapping':[]
+    };
+    var nodes = g.nodes;
+    for (var key in dict){
+        var row = dict[key];
+        for (var i=0; i<row.length; i++){
+            var nodeID1 = key;
+            var nodeID2 = row[i];
+            ret['Overlapping'].push([
+                {
+                    'id': parseInt(nodeID1),
+                    'loc': nodes[nodeID1]['loc']
+                },
+                {
+                    'id': parseInt(nodeID2),
+                    'loc': nodes[nodeID2]['loc']
+                }
+            ]);
+
+        }
+    }
+
+    return ret;
+
 
 }
 
@@ -207,6 +268,7 @@ function sharingMatrix(g, source, target, path, cutoff){
 }
 
 algorithms.pathFromPred = pathFromPred;
+
 
 function pathFromPred(g, source, target, pred){
 
